@@ -6,7 +6,6 @@ namespace ProgramLowisko.Scripts
     public class DataBaseManagement
     {
         public List<Ryba> Ryby = new List<Ryba>();
-        public List<Lowisko> Lowiska = new List<Lowisko>();
         public List<okersOchrony> okresyOchrony = new List<okersOchrony>();
         public List<LowiskoEx> LowiskoE= new List<LowiskoEx>();
         public List<Rybak> Rybacy = new List<Rybak>();
@@ -92,30 +91,14 @@ namespace ProgramLowisko.Scripts
                 Console.WriteLine(ex);
             }
         }
-        public void ShowRybacy()
+        public void AddRybak(string nazwa)
         {
             try
             {
                 conn.Open();
 
-                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM rybak", conn);
-                MySqlCommand cmd2 = new MySqlCommand($"SHOW TABLES;", conn);
-                Tables t = new();
-                MySqlDataReader rdr = cmd.ExecuteReader();
-                MySqlDataReader rdr2 = cmd2.ExecuteReader();
-
-
-                while (rdr.Read())
-                {
-                    Rybak Rybak = new Rybak
-                    {
-                        id = rdr.GetUInt16("id"),
-                        nazwa = rdr.GetString("nazwa"),
-
-                    };
-                    Rybacy.Add(Rybak);
-                }
-                rdr.Close();
+                MySqlCommand cmd = new MySqlCommand($"INSERT INTO rybak (nazwa) VALUES ('{nazwa}')", conn);
+                cmd.ExecuteNonQuery();
 
                 conn.Close();
             }
@@ -124,14 +107,40 @@ namespace ProgramLowisko.Scripts
                 Console.WriteLine(ex);
             }
         }
-        public void ShowRybacy()
+
+        public bool IsRybakTableExists()
         {
             try
             {
                 conn.Open();
 
-                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM rybak", conn);
+                MySqlCommand cmd = new MySqlCommand("SHOW TABLES LIKE 'rybak'", conn);
+                object result = cmd.ExecuteScalar();
 
+                conn.Close();
+
+                return result != null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+        }
+
+        public void ShowRybacy()
+        {
+            try
+            {
+                if (!IsRybakTableExists())
+                {
+                    Console.WriteLine("T    abela 'rybak' nie istnieje w bazie danych.");
+                    return;
+                }
+
+                conn.Open();
+
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM rybak", conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
 
                 while (rdr.Read())
@@ -140,7 +149,6 @@ namespace ProgramLowisko.Scripts
                     {
                         id = rdr.GetUInt16("id"),
                         nazwa = rdr.GetString("nazwa"),
- 
                     };
                     Rybacy.Add(Rybak);
                 }
